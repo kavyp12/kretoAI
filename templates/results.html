@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Outliers Results - YouTube Outliers Detector{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h1 class="display-5 fw-bold">
+        <i class="fas fa-chart-line text-success"></i> Outliers Analysis Results
+    </h1>
+    <p class="lead text-muted">
+        Analysis for: <strong>{{ search_query }}</strong> 
+        <span class="badge bg-primary">{{ search_type.title() }}</span>
+    </p>
+</div>
+
+<div class="stats-card">
+    <h4 class="text-center mb-4">
+        <i class="fas fa-chart-pie"></i> Statistical Summary
+    </h4>
+    <div class="row">
+        <div class="col-md-2 col-6 stats-item">
+            <span class="stats-number">{{ stats.total_videos }}</span>
+            <span class="stats-label">Total Videos</span>
+        </div>
+        <div class="col-md-2 col-6 stats-item">
+            <span class="stats-number">{{ stats.outliers_found }}</span>
+            <span class="stats-label">Outliers Found</span>
+        </div>
+        <div class="col-md-2 col-6 stats-item">
+            <span class="stats-number">{{ "{:,.0f}".format(stats.mean_views) }}</span>
+            <span class="stats-label">Avg Views</span>
+        </div>
+        <div class="col-md-2 col-6 stats-item">
+            <span class="stats-number">{{ "{:,.0f}".format(stats.max_views) }}</span>
+            <span class="stats-label">Max Views</span>
+        </div>
+        <div class="col-md-2 col-6 stats-item">
+            <span class="stats-number">{{ "{:.1f}%".format(stats.outlier_percentage) }}</span>
+            <span class="stats-label">Outlier Rate</span>
+        </div>
+        <div class="col-md-2 col-6 stats-item">
+            <span class="stats-number">{{ stats.method.split()[0] }}</span>
+            <span class="stats-label">Method Used</span>
+        </div>
+    </div>
+</div>
+
+{% if ai_insights %}
+<div class="ai-insights">
+    <h4 class="mb-3">
+        <i class="fas fa-brain"></i> AI-Powered Insights
+    </h4>
+    <div class="ai-content">
+        {{ ai_insights|replace('\n', '<br>')|safe }}
+    </div>
+</div>
+{% endif %}
+
+<div class="text-center mb-4">
+    <a href="/" class="btn btn-outline-primary me-2">
+        <i class="fas fa-arrow-left"></i> New Analysis
+    </a>
+    <button class="btn btn-outline-success" onclick="exportResults()">
+        <i class="fas fa-download"></i> Export Results
+    </button>
+</div>
+
+{% if outliers %}
+<div class="mb-4">
+    <h3>
+        <i class="fas fa-trophy text-warning"></i> 
+        High-Performing Videos ({{ outliers|length }} found)
+    </h3>
+    <p class="text-muted">Videos that significantly outperformed the average</p>
+</div>
+
+<div class="video-grid">
+    {% for video in outliers %}
+    <div class="card video-card mb-3">
+        <img src="{{ video.thumbnail_url }}" class="video-thumbnail" alt="Thumbnail for {{ video.title }}">
+        <div class="card-body">
+            <h6 class="card-title">{{ video.title[:80] }}{% if video.title|length > 80 %}...{% endif %}</h6>
+            <div class="mb-2">
+                <span class="badge bg-success view-count">
+                    <i class="fas fa-eye"></i> {{ "{:,}".format(video.view_count) }} views
+                </span>
+            </div>
+            <div class="row text-muted small mb-2">
+                <div class="col-6">
+                    <i class="fas fa-thumbs-up"></i> {{ "{:,}".format(video.like_count) if video.like_count else 'N/A' }}
+                </div>
+                <div class="col-6">
+                    <i class="fas fa-comments"></i> {{ "{:,}".format(video.comment_count) if video.comment_count else 'N/A' }}
+                </div>
+            </div>
+            <div class="row text-muted small mb-2">
+                <div class="col-12">
+                    <i class="fas fa-calendar"></i> {{ video.published_at }}
+                </div>
+            </div>
+            {% if search_type == 'niche' and video.channel_title %}
+            <div class="small text-muted mb-2">
+                <i class="fas fa-tv"></i> {{ video.channel_title }}
+            </div>
+            {% endif %}
+            <div class="d-grid mb-2">
+                <a href="https://www.youtube.com/watch?v={{ video.video_id }}" 
+                   target="_blank" class="btn btn-outline-danger btn-sm">
+                    <i class="fab fa-youtube"></i> Watch Video
+                </a>
+            </div>
+            {% if video.similar_videos %}
+            <button class="btn btn-outline-info btn-sm" type="button" data-bs-toggle="collapse" 
+                    data-bs-target="#similar-{{ video.video_id }}" aria-expanded="false" 
+                    aria-controls="similar-{{ video.video_id }}">
+                <i class="fas fa-eye"></i> Show Similar Videos
+            </button>
+            <div class="collapse mt-2" id="similar-{{ video.video_id }}">
+                <h5>Similar Videos & Inspiration</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Thumbnail</th>
+                                <th>Channel</th>
+                                <th>Title</th>
+                                <th>Views</th>
+                                <th>Likes</th>
+                                <th>Comments</th>
+                                <th>Engagement</th>
+                                <th>Perf. vs Avg</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for similar in video.similar_videos %}
+                            <tr>
+                                <td>
+                                    {% if similar.thumbnail_url %}
+                                    <img src="{{ similar.thumbnail_url }}" alt="Thumbnail for {{ similar.title }}" 
+                                         class="similar-thumbnail" style="width: 100px; height: 60px; object-fit: cover;">
+                                    {% else %}
+                                    <span class="text-muted">No thumbnail</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ similar.channel_title }}</td>
+                                <td>
+                                    <a href="https://www.youtube.com/watch?v={{ similar.video_id }}" target="_blank">
+                                        {{ similar.title[:50] }}{% if similar.title|length > 50 %}...{% endif %}
+                                    </a>
+                                </td>
+                                <td>{{ "{:,}".format(similar.view_count) }}</td>
+                                <td>{{ "{:,}".format(similar.like_count) if similar.like_count else 'N/A' }}</td>
+                                <td>{{ "{:,}".format(similar.comment_count) if similar.comment_count else 'N/A' }}</td>
+                                <td>{{ "{:.1f}%".format(similar.engagement_rate) }}</td>
+                                <td>{{ "{:.0f}%".format((similar.performance_vs_channel.performance_ratio - 1) * 100) if similar.performance_vs_channel else 'N/A' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if video.inspiration_insights %}
+                <div class="mt-2">
+                    <h6>Inspiration Insights</h6>
+                    <p class="small">{{ video.inspiration_insights }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+    <h4 class="text-muted">No outliers found</h4>
+    <p class="text-muted">Try adjusting the threshold or detection method</p>
+    <a href="/" class="btn btn-primary">Try Again</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function exportResults() {
+        const data = {
+            search_query: "{{ search_query }}",
+            search_type: "{{ search_type }}",
+            stats: {{ stats|tojson|safe }},
+            outliers: {{ outliers|tojson|safe }}
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `outliers_${data.search_query}_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+</script>
+{% endblock %}
