@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Title Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .tabs a {
+            text-decoration: none;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+        }
+        .tabs a:hover {
+            background-color: #0056b3;
+        }
+        .form-section, .trends-section, .pro-tips, .generated-titles, .current-trends, .history {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .form-section form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .form-section select, .form-section input, .form-section button {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .form-section button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .form-section button:hover {
+            background-color: #218838;
+        }
+        .trends-section ul, .generated-titles ul, .current-trends ul, .history ul {
+            list-style: none;
+            padding: 0;
+        }
+        .trends-section li, .generated-titles li, .current-trends li, .history li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .pro-tips ul {
+            list-style: disc;
+            padding-left: 20px;
+        }
+        .loading {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>YouTube Title Generator</h1>
+        </div>
+
+        <div class="tabs">
+            <a href="/trends">View Trends</a>
+            <a href="/history">History</a>
+        </div>
+
+        <div class="form-section">
+            <h2>Generate Trending Titles</h2>
+            <form id="title-form">
+                <div>
+                    <label for="client_prompt">Content Idea / Prompt *</label>
+                    <input type="text" id="client_prompt" name="client_prompt" required>
+                </div>
+                <div>
+                    <label for="niche">Niche/Category</label>
+                    <select id="niche" name="niche">
+                        <option value="Technology">Technology</option>
+                        <option value="Gaming">Gaming</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Education">Education</option>
+                        <option value="Lifestyle">Lifestyle</option>
+                        <option value="Food & Cooking">Food & Cooking</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Fitness & Health">Fitness & Health</option>
+                        <option value="Business">Business</option>
+                        <option value="Music">Music</option>
+                        <option value="Comedy">Comedy</option>
+                        <option value="News & Politics">News & Politics</option>
+                        <option value="DIY & Crafts">DIY & Crafts</option>
+                        <option value="Beauty & Fashion">Beauty & Fashion</option>
+                        <option value="General" selected>General</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="target_audience">Target Audience</label>
+                    <select id="target_audience" name="target_audience">
+                        <option value="General Audience" selected>General Audience</option>
+                        <option value="Kids (5-12)">Kids (5-12)</option>
+                        <option value="Teens (13-17)">Teens (13-17)</option>
+                        <option value="Young Adults (18-25)">Young Adults (18-25)</option>
+                        <option value="Adults (26-40)">Adults (26-40)</option>
+                        <option value="Middle-aged (41-55)">Middle-aged (41-55)</option>
+                        <option value="Seniors (55+)">Seniors (55+)</option>
+                        <option value="Professionals">Professionals</option>
+                        <option value="Students">Students</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="style_preference">Style Preference</label>
+                    <select id="style_preference" name="style_preference">
+                        <option value="Engaging & Clickable">Engaging & Clickable</option>
+                        <option value="Professional">Professional</option>
+                        <option value="Casual & Fun">Casual & Fun</option>
+                        <option value="Educational">Educational</option>
+                        <option value="Dramatic & Emotional">Dramatic & Emotional</option>
+                        <option value="Question-based">Question-based</option>
+                        <option value="List-based (Top 10, etc.)">List-based (Top 10, etc.)</option>
+                        <option value="How-to & Tutorial">How-to & Tutorial</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="count">Number of Titles</label>
+                    <select id="count" name="count">
+                        <option value="3">3 Titles</option>
+                        <option value="5" selected>5 Titles</option>
+                        <option value="8">8 Titles</option>
+                        <option value="10">10 Titles</option>
+                    </select>
+                </div>
+                <button type="submit">Generate Trending Titles</button>
+            </form>
+            <div class="loading" id="loading" style="display: none;">
+                Analyzing trends and generating titles...
+            </div>
+        </div>
+
+        <div class="trends-section">
+            <h2>Trending Now</h2>
+            <ul id="trending-keywords">
+                <li>Loading trending keywords...</li>
+            </ul>
+        </div>
+
+        <div class="pro-tips">
+            <h2>Pro Tips</h2>
+            <ul>
+                <li>Keep titles 40-70 characters</li>
+                <li>Use trending keywords naturally</li>
+                <li>Include numbers when relevant</li>
+                <li>Create curiosity without clickbait</li>
+                <li>Target your specific audience</li>
+            </ul>
+        </div>
+
+        <div class="generated-titles">
+            <h2>Generated Titles</h2>
+            <ul id="generated-titles-list">
+                <li>No titles generated yet.</li>
+            </ul>
+            <div>
+                <h3>Trend Analysis Used:</h3>
+                <p id="trend-analysis">No analysis available yet.</p>
+            </div>
+        </div>
+
+        <div class="current-trends">
+            <h2>Current YouTube Trends</h2>
+            <ul id="current-trends-list">
+                <li>Loading current trends...</li>
+            </ul>
+            <h3>Sample Trending Titles</h3>
+            <ul id="sample-trending-titles">
+                <li>Loading sample trending titles...</li>
+            </ul>
+        </div>
+
+        <div class="history">
+            <h2>Generation History</h2>
+            <ul id="history-list">
+                <li>Loading history...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('title-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const data = {
+                client_prompt: formData.get('client_prompt'),
+                niche: formData.get('niche'),
+                target_audience: formData.get('target_audience'),
+                style_preference: formData.get('style_preference'),
+                count: parseInt(formData.get('count'))
+            };
+
+            document.getElementById('loading').style.display = 'block';
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+
+                // Update generated titles
+                const titlesList = document.getElementById('generated-titles-list');
+                titlesList.innerHTML = result.titles.map(title => `<li>${title}</li>`).join('');
+
+                // Update trend analysis
+                const trendAnalysis = document.getElementById('trend-analysis');
+                trendAnalysis.innerHTML = `
+                    <strong>Trending Keywords:</strong> ${result.trends_context.trending_keywords.map(kw => kw[0]).join(', ')}<br>
+                    <strong>Patterns Used:</strong> Questions: ${result.trends_context.patterns_used.questions}%,
+                    Numbers: ${result.trends_context.patterns_used.numbers}%,
+                    Emotional Words: ${result.trends_context.patterns_used.emotional_words}%`;
+            } catch (error) {
+                alert('Error generating titles: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+
+        // Fetch trends on page load
+        async function loadTrends() {
+            try {
+                const response = await fetch('/trends');
+                const trends = await response.json();
+                const trendsList = document.getElementById('trending-keywords');
+                trendsList.innerHTML = trends.keywords.slice(0, 15).map(([kw, count]) => `<li>${kw} (${count})</li>`).join('');
+                
+                const sampleTitlesList = document.getElementById('sample-trending-titles');
+                sampleTitlesList.innerHTML = trends.sample_titles.map(title => `<li>${title}</li>`).join('');
+                
+                const currentTrendsList = document.getElementById('current-trends-list');
+                currentTrendsList.innerHTML = trends.keywords.map(([kw, count, type]) => `<li>${kw} (${type}, ${count})</li>`).join('');
+            } catch (error) {
+                console.error('Error loading trends:', error);
+            }
+        }
+
+        // Fetch history on page load
+        async function loadHistory() {
+            try {
+                const response = await fetch('/history');
+                const history = await response.json();
+                const historyList = document.getElementById('history-list');
+                historyList.innerHTML = history.map(item => `
+                    <li>
+                        <strong>Prompt:</strong> ${item.client_prompt}<br>
+                        <strong>Niche:</strong> ${item.niche}<br>
+                        <strong>Titles:</strong> ${item.generated_titles.join(', ')}
+                    </li>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        // Initialize page
+        loadTrends();
+        loadHistory();
+    </script>
+</body>
+</html> 

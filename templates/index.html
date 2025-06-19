@@ -5,19 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Outlier Detection Tool</title>
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Link to external stylesheet -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <!-- Header Section -->
     <header class="header">
         <div class="youtube-icon">
             <i class="fab fa-youtube"></i>
@@ -26,13 +22,10 @@
         <p class="header-subtitle">Discover videos that punch above their weight</p>
     </header>
 
-    <!-- Main Content -->
     <main class="main-container">
         
-        <!-- Search Container -->
         <div class="search-container glass-container">
             <form id="searchForm" class="search-form">
-                <!-- Main Search Input -->
                 <div class="form-group">
                     <label for="query" class="form-label">Search Topic</label>
                     <div class="input-container">
@@ -41,14 +34,12 @@
                     </div>
                 </div>
 
-                <!-- Advanced Filters Section -->
                 <div class="form-group">
                     <button type="button" id="toggleFiltersBtn" class="filters-toggle">
                         Advanced Filters <i class="fas fa-chevron-down"></i>
                     </button>
                     <div id="filters" class="filters-container hidden">
                         <div class="filters-grid">
-                            <!-- Multiplier Range -->
                             <div class="filter-group">
                                 <label class="filter-label"><i class="fas fa-chart-line"></i> Multiplier Range</label>
                                 <div class="filter-inputs">
@@ -56,7 +47,6 @@
                                     <input type="number" id="max_multiplier" name="max_multiplier" class="filter-input" placeholder="Max" step="0.1">
                                 </div>
                             </div>
-                            <!-- Views Range -->
                             <div class="filter-group">
                                 <label class="filter-label"><i class="fas fa-eye"></i> Views Range</label>
                                 <div class="filter-inputs">
@@ -64,29 +54,36 @@
                                     <input type="number" id="max_views" name="max_views" class="filter-input" placeholder="Max" step="1000">
                                 </div>
                             </div>
-                            <!-- Duration Range -->
                             <div class="filter-group">
                                 <label class="filter-label"><i class="fas fa-clock"></i> Duration (Minutes)</label>
                                 <div class="filter-inputs">
-                                    <input type="number" id="min_duration" name="min_duration" class="filter-input" placeholder="Min" min="0">
-                                    <input type="number" id="max_duration" name="max_duration" class="filter-input" placeholder="Max" min="0">
+                                    <input type="number" id="min_duration_minutes" name="min_duration_minutes" class="filter-input" placeholder="Min" min="0">
+                                    <input type="number" id="max_duration_minutes" name="max_duration_minutes" class="filter-input" placeholder="Max" min="0">
                                 </div>
                             </div>
-                            <!-- Subscribers Range -->
                             <div class="filter-group">
-                                <label class="filter _
-
--label"><i class="fas fa-users"></i> Subscribers</label>
+                                <label class="filter-label"><i class="fas fa-users"></i> Subscribers</label>
                                 <div class="filter-inputs">
                                     <input type="number" id="min_subscribers" name="min_subscribers" class="filter-input" placeholder="Min" step="1000">
                                     <input type="number" id="max_subscribers" name="max_subscribers" class="filter-input" placeholder="Max" step="1000">
+                                </div>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label"><i class="fas fa-fire-flame-curved"></i> Min Viral Score</label>
+                                <div class="filter-inputs">
+                                    <input type="number" id="min_viral_score" name="min_viral_score" class="filter-input" placeholder="e.g. 5" min="0" step="1">
+                                </div>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label"><i class="fas fa-calendar-alt"></i> Max Video Age (Days)</label>
+                                <div class="filter-inputs">
+                                    <input type="number" id="max_age_days" name="max_age_days" class="filter-input" placeholder="e.g. 90" min="1">
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Search Button -->
                 <div style="text-align: center; padding-top: 1rem;">
                     <button type="submit" id="searchBtn" class="search-button">
                         <span id="searchBtnText">
@@ -98,7 +95,6 @@
             </form>
         </div>
 
-        <!-- Results Section -->
         <div id="resultsSection" class="results-section glass-container hidden">
             <div class="results-header">
                 <h2 id="resultsCount" class="results-count"></h2>
@@ -107,30 +103,24 @@
                 </button>
             </div>
             <div id="resultsGrid" class="results-grid">
-                <!-- Video cards will be inserted here by JavaScript -->
-            </div>
+                </div>
         </div>
 
-        <!-- Placeholder for No Results or Errors -->
         <div id="info-placeholder" class="info-placeholder glass-container hidden"></div>
         
-        <!-- Popular Searches -->
         <div class="popular-searches glass-container">
             <h3>
                 <i class="fas fa-fire"></i>Popular Searches
             </h3>
             <div id="popularSearches" class="popular-tags">
-                <!-- Popular search tags will be inserted here -->
-            </div>
+                </div>
         </div>
     </main>
 
-    <!-- Toast Notification -->
     <div id="toast" class="toast">
         <p id="toast-message"></p>
     </div>
 
-    <!-- Link to external JavaScript file -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

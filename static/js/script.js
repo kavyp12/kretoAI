@@ -35,7 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     toggleFiltersBtn.addEventListener('click', () => {
         filtersDiv.classList.toggle('hidden');
-        toggleFiltersBtn.classList.toggle('open');
+        const icon = toggleFiltersBtn.querySelector('i');
+        icon.classList.toggle('fa-chevron-down');
+        icon.classList.toggle('fa-chevron-up');
     });
     
     /**
@@ -81,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     query: query,
-                    filters: getFilters()
+                    filters: getFilters() // Pass filters as a nested object
                 })
             });
 
@@ -125,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     /**
-     * Creates an HTML element for a single video card.
+     * Creates an HTML element for a single video card with advanced data.
      * @param {object} video - The video data object.
      * @returns {HTMLElement} - The video card element.
      */
@@ -133,28 +135,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement('div');
         card.className = 'video-card';
 
-        const multiplierClass = video.multiplier >= 20 ? 'multiplier-high' : video.multiplier >= 10 ? 'multiplier-medium' : 'multiplier-low';
-        
+        const tierColor = {
+            "Mega Viral": "bg-red-500",
+            "Super Viral": "bg-orange-500",
+            "Highly Viral": "bg-amber-500",
+            "Viral": "bg-yellow-500",
+            "Above Average": "bg-lime-500",
+            "Average": "bg-gray-400"
+        };
+        const tierClass = tierColor[video.performance_tier] || 'bg-gray-400';
+
         card.innerHTML = `
             <div class="relative">
                 <a href="${video.url}" target="_blank" rel="noopener noreferrer">
                     <img src="https://i.ytimg.com/vi/${video.video_id}/hqdefault.jpg" alt="Thumbnail for ${video.title}" class="w-full h-48 object-cover" loading="lazy" onerror="this.src='https://placehold.co/480x360/e2e8f0/94a3b8?text=No+Thumbnail'">
                 </a>
-                <div class="multiplier-badge ${multiplierClass}">
+                <div class="absolute top-2 left-2 text-white text-xs font-bold px-2 py-1 rounded-full ${tierClass}">
+                    ${video.performance_tier}
+                </div>
+                <div class="absolute top-2 right-2 text-white text-lg font-bold px-3 py-1 rounded-full bg-slate-800 bg-opacity-70 backdrop-blur-sm">
                     ${video.multiplier}x
                 </div>
             </div>
-            <div class="p-4 flex flex-col h-full">
+            <div class="p-4 flex flex-col flex-grow">
                 <h3 class="text-md font-bold text-gray-800 mb-2 line-clamp-2" title="${video.title}">
-                    <a href="${video.url}" target="_blank" rel="noopener noreferrer">${video.title}</a>
+                    <a href="${video.url}" target="_blank" rel="noopener noreferrer">#${video.rank || ''} ${video.title}</a>
                 </h3>
                 <p class="text-sm text-gray-600 mb-4 line-clamp-1" title="${video.channel_title}">
                     <i class="fas fa-user-circle mr-1 text-gray-400"></i>${video.channel_title}
                 </p>
-                <div class="space-y-2 text-sm">
-                    <div class="flex justify-between"><span class="text-gray-500">Video Views:</span> <span class="font-semibold">${video.views_formatted}</span></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Channel Avg:</span> <span class="font-semibold">${video.channel_avg_views_formatted}</span></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Likes:</span> <span class="font-semibold">${video.likes_formatted}</span></div>
+                <div class="mt-auto space-y-2 text-sm">
+                    <div class="flex justify-between items-center"><span class="text-gray-500"><i class="fas fa-eye w-4"></i> Video Views</span> <span class="font-semibold">${video.views_formatted}</span></div>
+                    <div class="flex justify-between items-center"><span class="text-gray-500"><i class="fas fa-chart-pie w-4"></i> Channel Avg</span> <span class="font-semibold">${video.channel_avg_views_formatted}</span></div>
+                    <div class="flex justify-between items-center"><span class="text-gray-500"><i class="fas fa-thumbs-up w-4"></i> Likes</span> <span class="font-semibold">${video.likes_formatted}</span></div>
+                    <div class="flex justify-between items-center"><span class="text-gray-500"><i class="fas fa-calendar-day w-4"></i> Age</span> <span class="font-semibold">${video.video_age_days} days</span></div>
+                    <div class="flex justify-between items-center"><span class="text-gray-500"><i class="fas fa-fire w-4"></i> Viral Score</span> <span class="font-semibold">${video.viral_score}</span></div>
                 </div>
             </div>
         `;
@@ -187,15 +202,19 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function getFilters() {
         const filters = {};
-        const fields = ['min_multiplier', 'max_multiplier', 'min_views', 'max_views', 'min_duration', 'max_duration', 'min_subscribers', 'max_subscribers'];
+        const fields = [
+            'min_multiplier', 'max_multiplier', 'min_views', 'max_views',
+            'min_duration_minutes', 'max_duration_minutes', 'min_subscribers', 'max_subscribers',
+            'min_viral_score', 'max_age_days'
+        ];
+        
         fields.forEach(id => {
-            const value = document.getElementById(id).value;
-            if (value) {
-                // Convert duration from minutes to seconds for the backend
-                if (id.includes('duration')) {
-                    filters[id] = parseInt(value, 10) * 60;
-                } else {
-                    filters[id] = parseFloat(value);
+            const element = document.getElementById(id);
+            if (element && element.value) {
+                // Use parseFloat for potential decimals, parseInt for others
+                const value = id.includes('multiplier') ? parseFloat(element.value) : parseInt(element.value, 10);
+                if (!isNaN(value)) {
+                    filters[id] = value;
                 }
             }
         });
@@ -256,18 +275,27 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {Array<object>} data - The data to convert.
      */
     function exportToCSV(data) {
-        const headers = ['Title', 'Channel', 'URL', 'Multiplier', 'Views', 'Channel Avg Views', 'Likes', 'Comments', 'Subscribers', 'Duration (s)'];
+        const headers = [
+            'Rank', 'Title', 'Channel', 'URL', 'Multiplier', 'Performance Tier', 'Composite Score', 'Viral Score',
+            'Views', 'Channel Avg Views', 'Likes', 'Comments', 'Duration (s)', 'Video Age (Days)', 'Published At'
+        ];
+        
         const rows = data.map(video => [
+            video.rank,
             `"${video.title.replace(/"/g, '""')}"`,
             `"${video.channel_title.replace(/"/g, '""')}"`,
             video.url,
             video.multiplier,
+            video.performance_tier,
+            video.composite_score,
+            video.viral_score,
             video.views,
             video.channel_avg_views,
             video.likes,
             video.comments,
-            video.subscribers,
-            video.duration_seconds
+            video.duration_seconds,
+            video.video_age_days,
+            video.published_at
         ]);
 
         const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
